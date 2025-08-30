@@ -1,35 +1,36 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-
+import { useState } from "react";
+import PersonalDetail from "./PersonalDetail";
+import Education from "./Education";
+import Experience from "./Experience";
+import Resume from "./Resume";
 
 function App() {
-  const [count, setCount] = useState(0)
+  // centralised state to hold all CV data
+  const [personal, setPersonal] = useState({
+    name: "",
+    email: "",
+    phone: "",
+  });
+
+  const [education, setEducation] = useState([]);
+  const [experience, setExperience] = useState([]);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      {/* LEFT SIDE - Input Forms */}
+      <div style={{ width: "40%", padding: "1rem", borderRight: "1px solid #ccc" }}>
+        <h2>CV Builder</h2>
+        <PersonalDetail personal={personal} setPersonal={setPersonal} />
+        <Education education={education} setEducation={setEducation} />
+        <Experience experience={experience} setExperience={setExperience} />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+
+      {/* RIGHT SIDE - Resume Display */}
+      <div style={{ flex: 1, padding: "1rem" }}>
+        <Resume personal={personal} education={education} experience={experience} />
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
