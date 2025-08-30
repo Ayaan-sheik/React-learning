@@ -844,4 +844,4 @@ const handleButtonClick = (url) => () => {
 <Button handleClick={handleButtonClick("https://google.com")} />
 <Button handleClick={handleButtonClick("https://theodinproject.com")} />
 ```
-this is better than writing "() =>" everysingle time 
+this is better than writing "() =>" everysingle time and doesnt render instantly

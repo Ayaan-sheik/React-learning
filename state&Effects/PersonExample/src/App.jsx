@@ -3,6 +3,27 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 
+
+function Person() {
+  const [person, setPerson] = useState({ name: "John", age: 100 });
+
+  // GOOD - Do this!
+  const handleIncreaseAge = () => {
+    // copy the existing person object into a new object
+    // while updating the age property
+    const newPerson = { ...person, age: person.age + 1 };
+    setPerson(newPerson);
+  };
+
+  return (
+    <div>
+      <h1>{person.name}</h1>
+      <h2>{person.age}</h2>
+      <button onClick={handleIncreaseAge}>Increase age</button>
+    </div>
+  );
+}
+
 function App() {
   const [count, setCount] = useState(0)
 
@@ -16,7 +37,7 @@ function App() {
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
       </div>
-      <h1>Hello World !!!</h1>
+      <h1>Vite + React</h1>
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
@@ -32,4 +53,4 @@ function App() {
   )
 }
 
-export default App
+export default Person
