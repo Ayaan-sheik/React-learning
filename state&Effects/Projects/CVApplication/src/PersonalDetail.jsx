@@ -1,72 +1,64 @@
-import { useState } from "react"
+import { useEffect } from "react";
 
 
+function PersonalDetail({ personal, setPersonal }) {
+  // Update personal data when form changes
+  const handleChange = (field, value) => {
+    setPersonal(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
-function PersonalDetail() {
-    const [person, setPerson] = useState({
-        name: "John Doe",
-        age: 18,
-        email: "johndoe@gmail.com",
-        phone: "9966102388",
-        address: "London, UK"
-    });
+  return (
+    <div className="form-section">
+      <h2 className="section-title">Personal Details</h2>
+      
+      <div className="form-group">
+        <label>Full Name</label>
+        <input
+          type="text"
+          value={personal.name}
+          onChange={(e) => handleChange('name', e.target.value)}
+          placeholder="Enter your full name"
+          className="form-input"
+        />
+      </div>
 
-    // Individual state variables for each field
-    const [name, setName] = useState(person.name);
-    const [age, setAge] = useState(person.age);
-    const [email, setEmail] = useState(person.email);
-    const [phone, setPhone] = useState(person.phone);
-    const [address, setAddress] = useState(person.address);
+      <div className="form-group">
+        <label>Email</label>
+        <input
+          type="email"
+          value={personal.email}
+          onChange={(e) => handleChange('email', e.target.value)}
+          placeholder="Enter your email"
+          className="form-input"
+        />
+      </div>
 
-    // Optionally, sync person state when any input changes
-    // But for now, just keep separate states for each field
+      <div className="form-group">
+        <label>Phone</label>
+        <input
+          type="text"
+          value={personal.phone}
+          onChange={(e) => handleChange('phone', e.target.value)}
+          placeholder="Enter your phone number"
+          className="form-input"
+        />
+      </div>
 
-    return (
-        <div>
-            <h2>Personal Details</h2>
-
-            <h3>Full Name</h3>
-            <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your name"
-            />
-
-            <h3>Age</h3>
-            <input
-                type="number"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                placeholder="Enter your age"
-            />
-
-            <h3>Email</h3>
-            <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-            />
-
-            <h3>Phone</h3>
-            <input
-                type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Enter your phone number"
-            />
-
-            <h3>Address</h3>
-            <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Enter your address"
-            />
-        </div>
-    );
+      <div className="form-group">
+        <label>Address</label>
+        <input
+          type="text"
+          value={personal.address}
+          onChange={(e) => handleChange('address', e.target.value)}
+          placeholder="Enter your address"
+          className="form-input"
+        />
+      </div>
+    </div>
+  );
 }
 
-
-export default PersonalDetail
+export default PersonalDetail;

@@ -3,6 +3,7 @@ import PersonalDetail from "./PersonalDetail";
 import Education from "./Education";
 import Experience from "./Experience";
 import Resume from "./Resume";
+import "./App.css";
 
 function App() {
   // centralised state to hold all CV data
@@ -10,23 +11,24 @@ function App() {
     name: "",
     email: "",
     phone: "",
+    address: "",
   });
 
   const [education, setEducation] = useState([]);
   const [experience, setExperience] = useState([]);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="app-container">
       {/* LEFT SIDE - Input Forms */}
-      <div style={{ width: "40%", padding: "1rem", borderRight: "1px solid #ccc" }}>
-        <h2>CV Builder</h2>
+      <div className="left-panel">
+        <h1 className="app-title">CV Builder</h1>
         <PersonalDetail personal={personal} setPersonal={setPersonal} />
         <Education education={education} setEducation={setEducation} />
         <Experience experience={experience} setExperience={setExperience} />
       </div>
 
       {/* RIGHT SIDE - Resume Display */}
-      <div style={{ flex: 1, padding: "1rem" }}>
+      <div className="right-panel">
         <Resume personal={personal} education={education} experience={experience} />
       </div>
     </div>
