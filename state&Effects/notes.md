@@ -279,3 +279,222 @@ function Form() {
   );
 }
 ```
+# more core concepts
+
+## Conditional Rendering
+
+In React, you often need to render different UI elements based on certain conditions or state.
+
+*Methods*
+
+  - If/Else statements: Good for complex logic.
+
+  - Ternary operator: condition ? <ExpressionA /> : <ExpressionB /> for simple if/else.
+
+  - Logical AND (&&): condition && <Expression /> for rendering something only if a condition is true.
+
+  - Switch statements: For handling multiple, distinct cases.
+
+Example 1: Ternary Operator
+```jsx
+function Greeting({ isLoggedIn }) {
+  return (
+    <div>
+      {isLoggedIn ? <h2>Welcome back!</h2> : <h2>Please log in</h2>}
+    </div>
+  );
+}
+```
+
+Example 2: Logical AND (&&) Operator
+```jsx
+function Cart({ items }) {
+  return (
+    <div>
+      <h2>Cart</h2>
+      {items.length > 0 && <p>You have {items.length} items</p>}
+    </div>
+  );
+}
+```
+
+
+Example 3: Full If-Else Logic
+
+For more complex scenarios, you can use standard if statements before the return statement.
+
+```jsx
+function Status({ status }) {
+  if (status === "loading") {
+    return <p>Loading...</p>;
+  }
+  
+  if (status === "error") {
+    return <p>An error occurred while fetching data.</p>;
+  }
+  
+  return <p>Data loaded successfully!</p>;
+}
+
+```
+
+
+this is also taught in this lesson earlier.
+## useEffect
+
+The useEffect hook lets you perform side effects in functional components (things that happen outside rendering, like fetching data, subscriptions, timers, DOM manipulations).
+
+```jsx
+useEffect(() => {
+  // side effect code
+  return () => {
+    // cleanup (optional)
+  };
+}, [dependencies]);
+```
+
+- First argument → A function containing your side effect code.
+
+- Return function (optional) → A "cleanup" function that runs before the component unmounts or before the effect runs again (e.g., clearing timers, removing event listeners).
+
+- Dependency array:
+
+  - [] → Run the effect once after the initial render (like componentDidMount).
+
+  - [state, prop] → Run the effect whenever the values in the array change.
+
+  - No array → Run the effect on every single render.
+
+```jsx 
+import React, { useState, useEffect } from "react";
+
+function Users() {
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    // Side effect: fetching API data
+    fetch("https://jsonplaceholder.typicode.com/users")
+      .then(res => res.json())
+      .then(data => setUsers(data));
+  }, []); // runs once
+
+  return (
+    <div>
+      <h2>User List</h2>
+      <ul>
+        {users.map(user => (<li key={user.id}>{user.name}</li>))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## useContext
+
+The useContext hook allows you to share state/data between components without "prop drilling" (passing props down through many levels of components).
+
+*Steps*
+
+  1. Create a context with React.createContext().
+
+  2. Wrap the components that need access to the context with a Provider component.
+
+  3. Consume the data in any child component using the useContext hook.
+
+Example: Dark Mode Context
+
+```jsx
+import React, { createContext, useContext, useState } from "react";
+
+// 1. Create Context
+const ThemeContext = createContext();
+
+// 2. Provider Component
+function ThemeProvider({ children }) {
+  const [darkMode, setDarkMode] = useState(false);
+
+  return (
+    <ThemeContext.Provider value={{ darkMode, setDarkMode }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+// 3. Consumer Component
+function ThemeToggle() {
+  const { darkMode, setDarkMode } = useContext(ThemeContext);
+
+  return (
+    <button onClick={() => setDarkMode(!darkMode)}>
+      {darkMode ? "Switch to Light" : "Switch to Dark"}
+    </button>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <h1>useContext Example</h1>
+      <ThemeToggle />
+    </ThemeProvider>
+  );
+}
+```
+
+✅ Here, useContext avoids passing darkMode and setDarkMode through props from App to ThemeToggle.
+
+## useRef
+
+The useRef hook gives you a mutable object (.current property) that:
+
+    Persists its value across renders (it doesn’t get reset).
+
+    Does not cause a re-render when its value is updated.
+
+    Can be used to directly reference and interact with DOM elements.
+
+
+Example 1: Accessing DOM
+
+```jsx
+import React, { useRef } from "react";
+
+function InputFocus() {
+  const inputRef = useRef(null);
+
+  const handleFocus = () => {
+    // direct DOM access via .current
+    inputRef.current.focus(); 
+  };
+
+  return (
+    <div>
+      <input ref={inputRef} type="text" placeholder="Click button to focus" />
+      <button onClick={handleFocus}>Focus Input</button>
+    </div>
+  );
+}
+```
+Example 2: Storing a Previous Value
+```jsx
+import React, { useState, useEffect, useRef } from "react";
+
+function PreviousValue() {
+  const [count, setCount] = useState(0);
+  const prevCountRef = useRef();
+
+  useEffect(() => {
+    // update the ref's .current property
+    prevCountRef.current = count; 
+  }, [count]); // This runs *after* the render
+
+  return (
+    <div>
+      <h2>Current: {count}</h2>
+      {/* The rendered value is from the *previous* render cycle */}
+      <h2>Previous: {prevCountRef.current}</h2>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+    </div>
+  );
+}
+```
