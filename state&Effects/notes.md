@@ -498,3 +498,256 @@ function PreviousValue() {
   );
 }
 ```
+
+
+## The `useffect` hook
+
+let say we wanna make a clock in our webpage which updates every sec.
+
+```jsx
+import { useState } from "react";
+
+export default function Clock() {
+  const [counter, setCounter] = useState(0);
+
+  setInterval(() => {
+    setCounter(count => count + 1)
+  }, 1000);
+
+  return (
+    <p>{counter} seconds have passed.</p>
+  );
+}
+```
+
+so we make a setInterval function and use `useState`.but when we run this code it re-renders too many times and exponentially increasses. why this happens??
+
+What happens in your code:
+
+1. Component renders → Clock function runs.
+
+2. Inside, you call setInterval(...).
+
+  - This creates a new interval that ticks every second.
+
+  - Each interval will call setCounter(...), which triggers a re-render.
+
+3. On re-render, the whole function runs again.
+
+  -  That means you create another setInterval.
+
+  - Now you’ve got two intervals running, then four, then eight… (exponential growth).
+
+  - Each of them updates state, which triggers even more renders.
+
+So in short:
+⚡ Every render creates a new timer → infinite explosion of intervals.
+
+
+*How to fix this??* 
+we use smthng called a `useEffect` hook.
+```jsx
+import { useEffect, useState } from "react";
+
+export default function Clock() {
+  const [counter, setCounter] = useState(0);
+
+  useEffect(() => {
+    setInterval(() => {
+      setCounter(count => count + 1)
+    }, 1000);
+  }, [])
+
+  return (
+    <p>{counter} seconds have passed.</p>
+  );
+}
+```
+
+How useffect works is basically like this.
+
+```jsx
+useEffect(() => {
+  // This runs after every render
+});
+
+useEffect(() => {
+  // This runs only on mount (when the component appears)
+}, []);
+
+useEffect(() => {
+  // This runs on mount *and also* if either a or b have changed since the last render
+}, [a, b]);
+```
+
+- Still if we use the above code we can see it popping twice every sec , this is happening due to `StrictMode` which is supposed to help us catch bugs.
+
+- so what is the bug here?.
+
+Why does it happen?
+
+In React 18, when you run your app in development mode with StrictMode enabled, React intentionally runs certain lifecycle methods and effects twice.
+
+This is done to help detect side effect bugs. For example:
+
+- useEffect mount → unmount → re-mount happens immediately in dev mode.
+
+- So if you set up an interval in useEffect, React will create one, clean it up, then create it again.
+
+That’s why you see two increments per second — you actually have two intervals running (because of the double-mount).
+
+- To cirumvent this we use the third part of `useEffect` hook comes in use which is return().
+
+
+```jsx
+
+import { useEffect, useState } from "react";
+
+export default function Clock() {
+  const [counter, setCounter] = useState(0);
+
+  useEffect(() => {
+    const key = setInterval(() => {
+      setCounter(count => count + 1)
+    }, 1000);
+
+    return () => {
+      clearInterval(key);
+    };
+  }, [])
+
+  return (
+    <p>{counter} seconds have passed.</p>
+  );
+}
+
+```
+
+
+## Where to use `useEffect` hook:
+
+if we use `useEffect` hook in places its not actually needed its leaded to error-prone , buggy and perfomance issues code. Which is not needed . Here is the list of places not to use the hook.
+
+
+### 🚫 1. **Deriving state from props or other state**
+
+❌ Bad:
+
+```jsx
+const [fullName, setFullName] = useState("");
+
+useEffect(() => {
+  setFullName(firstName + " " + lastName);
+}, [firstName, lastName]);
+```
+
+✅ Good: Compute directly in render.
+
+```jsx
+const fullName = firstName + " " + lastName;
+```
+
+
+
+### 🚫 2. **Simple computations**
+
+If something can be calculated during render, don’t push it into `useEffect`.
+
+❌ Bad:
+
+```jsx
+const [double, setDouble] = useState(0);
+
+useEffect(() => {
+  setDouble(value * 2);
+}, [value]);
+```
+
+✅ Good:
+
+```jsx
+const double = value * 2;
+```
+
+
+### 🚫 3. **Fetching data that doesn’t depend on React state**
+
+If the data is **static or known ahead of time**, load it outside React (e.g., import JSON or constants).
+Use `useEffect` only when fetching **as a side effect of user interaction or props**.
+
+
+
+### 🚫 4. **Synchronising with things that React already does**
+
+For example, scrolling into view when a condition changes can often be done with refs + conditional rendering rather than `useEffect`.
+
+
+
+### 🚫 5. **When you can use event handlers instead**
+
+❌ Bad: Using `useEffect` to react to a state change.
+
+```jsx
+useEffect(() => {
+  if (isOpen) {
+    console.log("Opened!");
+  }
+}, [isOpen]);
+```
+
+✅ Good: Just put the logic inside the place where you change the state.
+
+```jsx
+setIsOpen(true);
+console.log("Opened!");
+```
+
+
+
+### 🚫 6. **Initialising state from props**
+
+❌ Bad:
+
+```jsx
+const [count, setCount] = useState(0);
+
+useEffect(() => {
+  setCount(props.initialCount);
+}, [props.initialCount]);
+```
+
+✅ Good:
+
+```jsx
+const [count, setCount] = useState(() => props.initialCount);
+```
+
+
+
+### 🚫 7. **Storing values that don’t affect rendering**
+
+For mutable values that don’t need re-renders (like timers, DOM nodes, external library instances), use `useRef`, not `useEffect`.
+
+
+
+### 🚫 8. **Updating state just to mirror another state**
+
+If state B is always a direct function of state A, you don’t need both — just compute it inline.
+
+
+
+### 🚫 9. **When trying to prevent re-renders**
+
+Sometimes devs wrap something in `useEffect` thinking it’ll make it “faster.” That’s usually an anti-pattern. If re-rendering is heavy, fix the component structure (`memo`, `useMemo`, `useCallback`) instead.
+
+
+
+### 🚫 10. **Business logic that belongs outside the component**
+
+For example, validating inputs, formatting values, or doing pure math calculations — these belong in plain functions, not effects.
+
+
+
+💡 **Rule of thumb**:
+Use `useEffect` **only** when you need to synchronise your component with something *outside React’s render cycle* (e.g., timers, subscriptions, network requests, logging).
+If it’s just data derivation or calculations, don’t reach for `useEffect`.
