@@ -1334,3 +1334,152 @@ There are many libraries that help with data fetcing , to have an optimal experi
 - [TanStack Query React Docs – Overview](https://tanstack.com/query/latest/docs/framework/react/overview): An in-depth guide to TanStack Query, a powerful library for managing server state in React applications. :contentReference[oaicite:2]{index=2}
 
 - [Fetching in React: The Case of Lost Promises](https://www.developerway.com/posts/fetching-in-react-lost-promises): A detailed exploration of how Promises can cause race conditions in React data fetching and strategies to prevent them. :contentReference[oaicite:6]{index=6}
+
+
+
+# **Styling React Components**
+
+
+1️⃣ The problem with regular CSS
+--------------------------------
+
+-   In plain CSS, **all styles are global** by default.
+
+    -   Example: if two components use a class called `.button`, their styles might **conflict**.
+
+-   As your React app grows, **managing global CSS becomes harder**.
+
+-   This is why React developers use different solutions to **scope or modularize CSS**.
+
+* * * * *
+
+2️⃣ Ways to style React applications
+------------------------------------
+
+### a) **CSS Modules**
+
+-   CSS Modules are basically **regular CSS files** with a twist:
+
+    -   Class names are **scoped locally** to the component that imports them.
+
+    -   This prevents naming conflicts.
+
+-   Usage:
+
+    ```
+    import styles from './Button.module.css';
+
+    function Button() {
+      return <button className={styles.primary}>Click me</button>;
+    }
+
+    ```
+
+-   Benefit: You can write CSS normally, but React ensures the class names don't clash globally.
+
+* * * * *
+
+### b) **CSS-in-JS**
+
+-   Instead of writing CSS in a separate file, you write CSS **inside your JavaScript**.
+
+-   Popular libraries: `styled-components`, `emotion`.
+
+-   Advantages:
+
+    -   Styling can depend on **component state**.
+
+    -   Styles are **modular and scoped**.
+
+    -   Can include dynamic calculations like theme colors or props.
+
+-   Example with `styled-components`:
+
+    ```
+    import styled from 'styled-components';
+
+    const Button = styled.button`
+      background-color: ${props => props.primary ? 'blue' : 'gray'};
+      color: white;
+      padding: 8px 16px;
+    `;
+
+    function App() {
+      return <Button primary>Click me</Button>;
+    }
+
+    ```
+
+* * * * *
+
+### c) **CSS Utility Frameworks**
+
+-   These provide **predefined classes** you can apply directly in JSX.
+
+-   Popular example: **Tailwind CSS**.
+
+-   Example:
+
+    ```
+    <button className="bg-blue-500 text-white p-2 rounded">Click me</button>
+
+    ```
+
+-   Pros: Fast, consistent styling, no need to write custom CSS.
+
+-   Cons: Can become messy if overused, harder to fully customise components.
+
+* * * * *
+
+### d) **Component Libraries**
+
+-   Libraries that provide **ready-made, styled components** (buttons, tabs, modals, etc.)
+
+-   Examples: **Material UI, Chakra UI, Radix**.
+
+-   You just use the components, sometimes with simple props to customize them.
+
+-   Icon libraries like **lucide-react** let you import icons as React components.
+
+* * * * *
+
+3️⃣ Recommended approach for learning
+-------------------------------------
+
+-   **For beginners and learning purposes:**
+
+    -   Avoid heavy frameworks or pre-styled component libraries.
+
+    -   Focus on building and styling components from scratch.
+
+    -   **Use CSS Modules** → this gives the benefits of scoped CSS without adding complexity.
+
+    -   Icon component libraries are okay to use.
+
+* * * * *
+
+✅ **Big Picture:**
+
+-   React gives you flexibility: you can write CSS in multiple ways.
+
+-   For learning, start with **CSS Modules** to understand styling, scoping, and modularity.
+
+-   Once comfortable, you can explore **CSS-in-JS**, **Tailwind**, or **component libraries** for faster development.
+
+* * * * *
+
+## **Additonal Resources for Styling**
+
+- [CSS Modules on GitHub](https://github.com/css-modules/css-modules)
+- [Using CSS Modules in React Components (MakeUseOf)](https://www.makeuseof.com/react-components-css-modules-style/)
+- Skim through this :[Styled-Components Official Site](https://styled-components.com/)
+- [The styled-components Happy Path: My Personal Suite of “Best Practices” by Josh W. Comeau](https://www.joshwcomeau.com/css/styled-components/)
+
+
+# **Topics Needed to be covered !!!!**
+
+- **Managing State with Context API**
+- **Reducing State**
+- **Refs and Memorization**
+
+
