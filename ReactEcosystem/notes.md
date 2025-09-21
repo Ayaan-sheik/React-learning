@@ -1021,3 +1021,316 @@ test('redirects to login if not authenticated', () => {
 - [React Router 6.28.0 Tutorial](https://reactrouter.com/6.28.0/start/tutorial)
 - [React Router Official Website](https://reactrouter.com/)
 - [Understanding SPAs & Client-Side Routing](https://bholmes.dev/blog/spas-clientside-routing/)
+
+
+# ** Fetching Data in React**
+
+So Far we have been bulding React applications where most of data is in the code or lives locally . But real world web apps fetch data from various parts of the internet . In this chapter lets learn about usign Javascript operations like `fetch` function.
+
+### A basic fetch request 
+
+```jsx
+const image = document.querySelector("img");
+fetch("https://jsonplaceholder.typicode.com/photos")
+  .then((response) => response.json())
+  .then((response) => {
+    image.src = response[0].url;
+  })
+  .catch((error) => console.error(error));
+```
+
+- this is how we used to fetch data in vanilla js .
+
+### How to use fetch in React?
+
+- Like the previous example lets incoporate an api to fetch an image.
+
+- In React , it is often best to wrap `fetch` a effect.
+
+```jsx
+import { useEffect, useState } from "react";
+
+const Image = () => {
+  const [imageURL, setImageURL] = useState(null);
+
+  useEffect(() => {
+    fetch("https://jsonplaceholder.typicode.com/photos")
+      .then((response) => response.json())
+      .then((response) => setImageURL(response[0].url))
+      .catch((error) => console.error(error));
+  }, []);
+
+  return (
+    imageURL && (
+      <>
+        <h1>An image</h1>
+        <img src={imageURL} alt={"placeholder text"} />
+      </>
+    )
+  );
+};
+
+export default Image;
+```
+
+- Here `useState` lets us add the `imageURL` state whereas `useEffect` allows us to add side effects . In this case the side effect is fetching data from an external API. Since we need to pass the data only once we use a empty dependence array .
+
+### Handling Errors
+
+- When fetching data over the internet a multitude of issues could happen , We could end up into errors and if dont plan for errors we might break our website.
+
+1. Adding an `error` state
+
+```jsx
+const [error, setError] = useState(null);
+```
+
+- we create an error state variable , if smthng goes wrong we will update error with a message instead of silently failing.
+
+Inside the render:
+```jsx
+if (error) return <p>A network error was encountered</p>;
+```
+
+2. Catching different types of errors
+
+```jsx
+.then((response) => {
+  if (response.status >= 400) {
+    throw new Error("server error");
+  }
+  return response.json();
+})
+.catch((error) => setError(error));
+```
+- `fetch` itself doesn’t throw an error if the server responds with 404/500. It only errors if the network fails.
+
+- So we manually check `response.status`:
+
+  - If it’s `400` or higher, we throw an error.
+
+- That error is caught by `.catch((error) => setError(error))`, updating our error state.
+
+3. Adding a load state
+
+```jsx
+const Image = () => {
+  const [imageURL, setImageURL] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("https://jsonplaceholder.typicode.com/photos", { mode: "cors" })
+      .then((response) => {
+        if (response.status >= 400) {
+          throw new Error("server error");
+        }
+        return response.json();
+      })
+      .then((response) => setImageURL(response[0].url))
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>A network error was encountered</p>;
+
+  return (
+    <>
+      <h1>An image</h1>
+      <img src={imageURL} alt={"placeholder text"} />
+    </>
+  );
+};
+```
+
+- so what happens here 
+
+```jsx
+const [loading, setLoading] = useState(true);
+```
+
+- When the component first mounts, `loading = true`.
+
+- After the fetch finishes (success or fail), we set `loading = false`.
+
+- `.finally(() => setLoading(false))` ensures this happens whether the request worked or failed.
+
+In the render:
+```jsx
+if (loading) return <p>Loading...</p>;
+if (error) return <p>A network error was encountered</p>;
+```
+
+-  while request is loading -> show "**Loading**"
+- if error occurs -> show error message
+- otherwise show the images.
+
+4. Final Flow of Component
+
+  1.  Component mounts → `loading = true`.
+
+  2.  Fetch starts.
+
+  3.  If success → save image URL to state → `loading = false`.
+
+  4.  If fail (bad URL, server error, or no network) → save error to state → `loading = false`.
+
+  5.  UI shows the correct state:
+
+      -   Loading → "Loading..."
+
+      -   Error → "A network error was encountered"
+
+      -   Success → Image.
+
+
+## **Using Custom Hooks**
+
+We can seperate out the fetching logic altogether in a custom hook . In prev lesson we learnt that hooks follow a naming rule where they begin with `use` followed by a Capital letter .
+
+Now if we want to fetch a image in a different component we need to copy all this code again , so lets just build a `custom hook` i.e `useImageURL` 
+
+How the custom hook works:
+
+```jsx
+import { useState, useEffect } from "react";
+
+const useImageURL = () => {
+  const [imageURL, setImageURL] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("https://jsonplaceholder.typicode.com/photos", { mode: "cors" })
+      .then((response) => {
+        if (response.status >= 400) {
+          throw new Error("server error");
+        }
+        return response.json();
+      })
+      .then((response) => setImageURL(response[0].url))
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
+  }, []);
+
+  return { imageURL, error, loading };
+};
+
+const Image = () => {
+  const { imageURL, error, loading } = useImageURL();
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>A network error was encountered</p>;
+
+  return (
+    <>
+      <h1>An image</h1>
+      <img src={imageURL} alt={"placeholder text"} />
+    </>
+  );
+};
+```
+
+## Managing Multiple Fetch requests
+
+* * * * *
+
+1️⃣ What is a waterfall of requests?
+------------------------------------
+
+A **waterfall** happens when multiple fetch requests are made **sequentially**, instead of in parallel.
+
+**Why it happens in React:**
+
+-   React only runs the code for a component when it **mounts**.
+
+-   If a child component's rendering is **conditional** (e.g., `{imageURL && <Bio />}`), the child **doesn't mount until the parent's data is ready**.
+
+-   Any fetch inside that child component's `useEffect` won't start until the component mounts.
+
+-   Result: the child fetch **waits unnecessarily**, creating a *waterfall effect*, where each request depends on the previous one finishing first.
+
+**Example Flow:**
+
+1.  Parent `<Profile />` fetches an image → takes 1 second.
+
+2.  Child `<Bio />` only mounts **after imageURL exists** → its fetch starts → takes another 1 second.
+
+3.  Total time = 2 seconds, even though both requests could have happened at the same time.
+
+* * * * *
+
+2️⃣ How to prevent it
+---------------------
+
+The main idea: **start all independent requests as early as possible**, and don't tie one request to the rendering of another component unless necessary.
+
+### ✅ Solutions
+
+#### a) **Lift state up**
+
+-   Move the fetch logic **from the child component to the parent**.
+
+-   Parent fetches both pieces of data (image + bio) at the same time.
+
+-   Pass the child's data as **props**.
+
+-   Child renders immediately, and updates when the prop arrives.
+
+```
+const Profile = () => {
+  const [imageURL, setImageURL] = useState(null);
+  const [bioText, setBioText] = useState(null);
+
+  useEffect(() => {
+    fetch("/api/profile-image").then(res => res.json()).then(data => setImageURL(data.url));
+    fetch("/api/bio").then(res => res.json()).then(data => setBioText(data.text));
+  }, []);
+
+  return (
+    <div>
+      {imageURL ? <img src={imageURL} /> : "Loading image..."}
+      <Bio bioText={bioText} />
+    </div>
+  );
+};
+
+const Bio = ({ bioText }) => bioText ? <p>{bioText}</p> : <p>Loading bio...</p>;
+
+```
+
+#### b) **Don't conditionally block child rendering unnecessarily**
+
+-   If a child can fetch its own data **independently**, avoid wrapping it in a condition that waits for the parent.
+
+-   Example: render `<Bio />` immediately, and let it handle its own loading state.
+
+* * * * *
+
+### ✅ Key Takeaways
+
+-   **Waterfall** = requests waiting unnecessarily → slower UI.
+
+-   **Cause:** conditional rendering + fetch inside child component.
+
+-   **Fix:** lift fetch logic up, pass data as props, or render children independently.
+
+-   Always try to **fire independent requests in parallel** when possible.
+
+* * * * *
+
+### Data Fetching libraries
+
+There are many libraries that help with data fetcing , to have an optimal experience remember to have `data`, `loading` and `error`.
+
+**Additional Links**
+
+[Modern API data fetching methods in React (LogRocket)](https://blog.logrocket.com/modern-api-data-fetching-methods-react/)
+
+[How to fetch data in React (DeveloperWay)](https://www.developerway.com/posts/how-to-fetch-data-in-react)
+
+
+- [TanStack Query React Docs – Overview](https://tanstack.com/query/latest/docs/framework/react/overview): An in-depth guide to TanStack Query, a powerful library for managing server state in React applications. :contentReference[oaicite:2]{index=2}
+
+- [Fetching in React: The Case of Lost Promises](https://www.developerway.com/posts/fetching-in-react-lost-promises): A detailed exploration of how Promises can cause race conditions in React data fetching and strategies to prevent them. :contentReference[oaicite:6]{index=6}
